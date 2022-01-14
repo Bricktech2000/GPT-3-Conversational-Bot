@@ -1,4 +1,4 @@
-# The General-Purpose Annoying Bot
+# General-Purpose Annoying Bot
 
 Annoying
 
@@ -7,7 +7,7 @@ Annoying
 Clone the repo and navigate to it, and then install these dependencies if you don't already have them:
 
 ```bash
-pip install discord.py
+pip install discord openai
 ```
 
 The bots token and prefix are stored in a file called `config.json` located in main folder. Make it, and fill it with this:
@@ -15,7 +15,8 @@ The bots token and prefix are stored in a file called `config.json` located in m
 ```json
 {
   "token": "YOUR_TOKEN_HERE",
-  "prefix": "YOUR_PREFIX_HERE"
+  "prefix": "YOUR_PREFIX_HERE",
+  "openai_api_key": "YOUR_OPENAI_API_KEY_HERE"
 }
 ```
 
@@ -30,6 +31,6 @@ python main.py
 ## TODO
 
 - [ ] Modify the Training data to either have long conversations or make short, snappy things
-- [X] Make the responses sound like Grace
-- [ ] Work with temperature to make it lively 
+- [x] Make the responses sound like Grace
+- [ ] Work with temperature to make it lively
 - [ ] Menu in discord to manage options?
