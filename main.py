@@ -1,4 +1,5 @@
 from hashlib import new
+from re import S
 import discord
 import openai
 import json
@@ -14,12 +15,14 @@ conversations = []
 
 openai.api_key = config['openai_api_key']
 
-start_sequence = "\nBot:"
+start_sequence = "\nBOT:"
 restart_sequence = "\n\nPerson:"
 session_prompt = open("session_prompt.txt", "r").read()
 
 def ask(question, chat_log=None):
-    prompt_text = f'{chat_log}{restart_sequence}: {question}{start_sequence}:'
+    prompt_text = f'{chat_log}{restart_sequence} {question}{start_sequence}'
+    prompt_text = prompt_text.replace("BOT", session_prompt.split('\n')[0])
+    print(prompt_text)
     response = openai.Completion.create(
         engine="davinci",
         prompt=prompt_text,
@@ -31,6 +34,7 @@ def ask(question, chat_log=None):
         stop=["\n"],
     )
     story = response['choices'][0]['text']
+    # print(f'response: str(story)')
     return str(story)
 
 @client.event
@@ -39,6 +43,7 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    global session_prompt
     if message.author.bot: return
 
     convo = None
@@ -54,8 +59,11 @@ async def on_message(message):
     if convo == None:
         convo = Conversation(message.author, message.channel, None)
 
-    # await message.channel.send("GPT-3 anser: ")
-    await message.channel.send(ask(message.content, session_prompt))
+    response = ask(message.content, session_prompt)
+
+    if response:
+        session_prompt = f'{session_prompt}{restart_sequence} {message.content}{start_sequence}{response} '
+        await message.channel.send(response)
 
     # no need for this
     # if not message.content.startswith(config["prefix"]): return
