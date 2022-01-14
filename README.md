@@ -29,6 +29,7 @@ python main.py
 
 ## TODO
 
-- Detect speech and respond accordingly
-- Make the responses sound like Grace
-- Menu in discord to manage options?
+- [ ] Modify the Training data to either have long conversations or make short, snappy things
+- [X] Make the responses sound like Grace
+- [ ] Work with temperature to make it lively 
+- [ ] Menu in discord to manage options?
