@@ -12,7 +12,7 @@ current_chats = []
 
 config = json.load(open("config.json"))
 bot_sequence = "Grace:"
-training_data = open("session_prompt.txt", "r").read()
+training_data = open("training_data.txt", "r").read()
 client = discord.Client()
 openai.api_key = config['openai_api_key']
 
