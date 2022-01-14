@@ -70,7 +70,8 @@ async def on_message(message):
         # https://stackoverflow.com/questions/62311644/discord-py-how-to-display-bot-typing-indicator-in-dms
         # https://stackoverflow.com/questions/64826460/how-do-i-make-discord-bot-display-typing-and-stop-typing-when-a-message-is-sent
         async with message.channel.typing():
-            await asyncio.sleep(0.5)
+            print(f"Typing speed: {len(response)/15 + 0.5}s")
+            await asyncio.sleep(len(response)/15 + 0.5)
         await message.channel.send(response)
 
 client.run(config["token"])
