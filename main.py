@@ -11,8 +11,9 @@ conversations = []
 current_chats = []
 
 config = json.load(open("config.json"))
-bot_sequence = "\nBot:"
+bot_sequence = "Grace:"
 training_data = open("session_prompt.txt", "r").read()
+training_data = training_data.replace('Bot: ', 'Grace: ') # temporary hack
 client = discord.Client()
 openai.api_key = config['openai_api_key']
 
@@ -57,19 +58,20 @@ async def on_message(message):
     #     convo = Conversation(message.author, message.channel, None)
 
     username = message.author.display_name
-    username_sequence = f'\n{username}:'
+    username_sequence = f'{username}:'
 
-    current_chats.append(f'{username_sequence} {message.content}')
-    response = GPT_3(f"{training_data}{''.join(current_chats[-NUM_CHATS:-1])}{username_sequence} {message.content}")
+    current_chats.append(f'\n{username_sequence} {message.content}')
+    response = GPT_3(f"{training_data}{''.join(current_chats[-NUM_CHATS:-1])}\n{username_sequence} {message.content}")
     
 
-    if response and "Bot: " in response:
-        response = response.replace("Bot: ", "")
-        current_chats.append(f'{bot_sequence} {response}')
+    if response and bot_sequence in response:
+        response = response.replace(f'{bot_sequence} ', '')
+        # current_chats.append(f'\n{bot_sequence} {response}')
         # https://stackoverflow.com/questions/62311644/discord-py-how-to-display-bot-typing-indicator-in-dms
         # https://stackoverflow.com/questions/64826460/how-do-i-make-discord-bot-display-typing-and-stop-typing-when-a-message-is-sent
         async with message.channel.typing():
-            await asyncio.sleep(0.5)
+            print(f"Typing speed: {len(response)/15 + 0.5}s")
+            await asyncio.sleep(len(response)/15 + 0.5)
         await message.channel.send(response)
 
 client.run(config["token"])
