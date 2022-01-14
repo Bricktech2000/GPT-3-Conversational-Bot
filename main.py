@@ -1,6 +1,7 @@
 import discord
 import openai
 import json
+import asyncio
 
 # import time
 # from conversation import Conversation
@@ -15,14 +16,13 @@ training_data = open("session_prompt.txt", "r").read()
 client = discord.Client()
 openai.api_key = config['openai_api_key']
 
-NUM_CHATS = 10
+NUM_CHATS = 4
 
-def ask(question, username_sequence, chat_log=None):
-    prompt_text = f'{chat_log}{username_sequence} {question}\n'
-    print('\n\n\n\n', prompt_text, end='')
+def GPT_3(chat_log):
+    print('\n\n\n\n', chat_log)
     response = openai.Completion.create(
-        engine="davinci",
-        prompt=prompt_text,
+        engine="curie",
+        prompt=chat_log + '\n',
         temperature=0.8,
         max_tokens=75,
         top_p=1,
@@ -60,11 +60,16 @@ async def on_message(message):
     username_sequence = f'\n{username}:'
 
     current_chats.append(f'{username_sequence} {message.content}')
-    response = ask(message.content, username_sequence, training_data + ''.join(current_chats[-NUM_CHATS:-1]))
+    response = GPT_3(f"{training_data}{''.join(current_chats[-NUM_CHATS:-1])}{username_sequence} {message.content}")
+    
 
     if response and "Bot: " in response:
         response = response.replace("Bot: ", "")
         current_chats.append(f'{bot_sequence} {response}')
+        # https://stackoverflow.com/questions/62311644/discord-py-how-to-display-bot-typing-indicator-in-dms
+        # https://stackoverflow.com/questions/64826460/how-do-i-make-discord-bot-display-typing-and-stop-typing-when-a-message-is-sent
+        async with message.channel.typing():
+            await asyncio.sleep(0.5)
         await message.channel.send(response)
 
 client.run(config["token"])
