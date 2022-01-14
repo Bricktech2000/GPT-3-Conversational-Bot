@@ -54,7 +54,7 @@ async def on_message(message):
     if convo == None:
         convo = Conversation(message.author, message.channel, None)
 
-    await message.channel.send("GPT-3 anser: ")
+    # await message.channel.send("GPT-3 anser: ")
     await message.channel.send(ask(message.content, session_prompt))
 
     # no need for this
