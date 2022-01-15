@@ -25,7 +25,7 @@ And then fill in the values for your bot's prefix, the [bot's token](https://dis
 Run the bot with this command (in the bots directiory):
 
 ```bash
-python main.py training_data/Grace_optimized.txt
+python main.py training_data/Grace_decision_2.txt training_data/Grace_response.txt
 ```
 
 ## TODO
@@ -35,5 +35,5 @@ python main.py training_data/Grace_optimized.txt
 - [ ] Work with temperature to make it lively
 - [ ] Menu in discord to manage options?
 - [x] Support for separate simultaneous conversations
-- [ ] Different systems for _whether_ it should answer and _what_ it actually answers
+- [x] Different systems for _whether_ it should answer and _what_ it actually answers
 - [ ] Shorten the length of the usernames in the training data (sha1 hashes ?)

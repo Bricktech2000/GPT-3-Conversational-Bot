@@ -6,14 +6,14 @@ import sys
 import asyncio
 from conversation import Conversation
 
-if len(sys.argv) != 2:
-    print("Usage: python main.py <training data file path>")
+if len(sys.argv) != 3:
+    print("Usage: python main.py <decision training data file path> <response training data file path>")
     exit(1)
 
 config = json.load(open("config.json"))
-training_data = open(sys.argv[1], "r").read()
-responding_training_data = open("training_data/Small_Data.txt", "r").read() # I don't know how the fuck Emilien is doing in the
-client = discord.Client()                                                    # line above, so I just did this. Feel free to fix.
+decision_training_data = open(sys.argv[1], "r").read()
+response_training_data = open(sys.argv[2], "r").read()
+client = discord.Client()
 openai.api_key = config['openai_api_key']
 conversations = {}
 
@@ -21,14 +21,14 @@ NUM_CHATS = 8 # the number of chats to append to the training data
 TEMPERATURE = 0.8 # the "originality" of GPT-3's answers
 MAX_TOKENS = 50 # the maximal length of GPt-3's answers
 CONVERSATION_TIMEOUT = 60 # seconds. the time to wait before a conversation is considered dead
-TIME_DELAY = 3 # seconds. The time to wait between sending new messages to API
+TIME_DELAY = 0 # seconds. The time to wait between sending new messages to API
 
-def GPT_3(chat_log):
+def GPT_3(engine, chat_log, max_tokens=MAX_TOKENS):
     response_object = openai.Completion.create(
-        engine="curie",
-        prompt=chat_log + '\n',
+        engine=engine,
+        prompt=chat_log,
         temperature=TEMPERATURE,
-        max_tokens=MAX_TOKENS,
+        max_tokens=max_tokens,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0.6,
@@ -36,8 +36,8 @@ def GPT_3(chat_log):
     )
     response = str(response_object['choices'][0]['text'])
 
-    print('\n\n\n\n', chat_log)
-    print(response)
+    # print('\n\n\n\n', chat_log)
+    # print(response)
     return response
 
 @client.event
@@ -49,33 +49,31 @@ async def on_message(message):
     global conversations
 
     conversation_id = f'{message.channel.id}%{message.guild.id}'
-    current_time = time.time() # seconds
-    no_convo = Conversation(0) # This is so the if statemnt below still works
-    
+
     # if CONVERSATION_TIMEOUT seconds have passed since the last message, reset the conversation
     # if no coversation exsists, make one
-    if conversations.get(conversation_id, no_convo).timeAlive + CONVERSATION_TIMEOUT < current_time:
-        conversations[conversation_id] = Conversation()
+    if conversation_id not in conversations:
+        conversations[conversation_id] = Conversation(CONVERSATION_TIMEOUT, TIME_DELAY)
     current_convo = conversations[conversation_id]
 
     username = message.author.display_name
-    username_sequence = f'{username}:'
-    # https://stackoverflow.com/questions/54304428/get-bots-status-discord-py
     botname = message.guild.get_member(client.user.id).display_name
-    botname_sequence = f'{botname}:'
-    response = False
+    response = None
 
-    # Adds the message to the conversation and generates the "Should respond?" message
-    current_convo.Add_Chat(username_sequence, message.content)
-    if current_convo.Current_Length() >= TIME_DELAY:
-        response = GPT_3(f"{responding_training_data}{''.join(current_convo.chats[-NUM_CHATS:-1])}")
-        current_convo.Restart_Timer()
+    print(f'received message: {message.content}')
+
+    # add the message to the conversation and generate the "Should respond?" message
+    should_fetch = current_convo.should_fetch()
+    current_convo.add_chat(username, message.content)
+    if should_fetch:
+        response = GPT_3('curie', decision_training_data + current_convo.get_chat_log(NUM_CHATS) + '\n', 10) # 10 tokens for the username
+        print(f'decision prediction: {response}')
 
     # if GPT-3 believes it should type next response, send that response
-    print(response, botname_sequence)
-    if response and botname_sequence in response:
-        response = GPT_3(f"{training_data}{''.join(conversations[conversation_id][-NUM_CHATS:])}")
-        response = response.replace(f'{botname_sequence} ', '')
+    if response and f'{botname}: ' in response:
+        response = GPT_3('curie', response_training_data + current_convo.get_chat_log(NUM_CHATS) + f'\n{botname}: ')
+        print('curie', response_training_data + current_convo.get_chat_log(NUM_CHATS) + f'\n{botname}: ')
+        print(f'response prediction: {response}')
         async with message.channel.typing():
             typing_delay = len(response) / 15 # 15 characters per second
             print(f"Typing delay: {typing_delay}s")
