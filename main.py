@@ -12,7 +12,8 @@ if len(sys.argv) != 2:
 
 config = json.load(open("config.json"))
 training_data = open(sys.argv[1], "r").read()
-client = discord.Client()
+responding_training_data = open("training_data/Small_Data.txt", "r").read() # I don't know how the fuck Emilien is doing in the
+client = discord.Client()                                                    # line above, so I just did this. Feel free to fix.
 openai.api_key = config['openai_api_key']
 conversations = {}
 
@@ -20,6 +21,7 @@ NUM_CHATS = 8 # the number of chats to append to the training data
 TEMPERATURE = 0.8 # the "originality" of GPT-3's answers
 MAX_TOKENS = 50 # the maximal length of GPt-3's answers
 CONVERSATION_TIMEOUT = 60 # seconds. the time to wait before a conversation is considered dead
+TIME_DELAY = 3 # seconds. The time to wait between sending new messages to API
 
 def GPT_3(chat_log):
     response_object = openai.Completion.create(
@@ -63,14 +65,16 @@ async def on_message(message):
     botname_sequence = f'{botname}:'
     response = False
 
+    # Adds the message to the conversation and generates the "Should respond?" message
     current_convo.Add_Chat(username_sequence, message.content)
     if current_convo.Current_Length() >= 3:
-        response = GPT_3(f"{training_data}{''.join(current_convo.chats[-NUM_CHATS:-1])}")
+        response = GPT_3(f"{responding_training_data}{''.join(current_convo.chats[-NUM_CHATS:-1])}")
         current_convo.Restart_Timer()
 
     # if GPT-3 believes it should type next response, send that response
     print(response, botname_sequence)
     if response and botname_sequence in response:
+        responce = GPT_3(f"{training_data}{''.join(conversations[conversation_id][-NUM_CHATS:])}")
         response = response.replace(f'{botname_sequence} ', '')
         async with message.channel.typing():
             typing_delay = len(response) / 15 # 15 characters per second
