@@ -68,7 +68,6 @@ async def on_message(message):
         response = GPT_3(f"{training_data}{''.join(current_convo.chats[-NUM_CHATS:-1])}")
         current_convo.Restart_Timer()
 
-
     # if GPT-3 believes it should type next response, send that response
     print(response, botname_sequence)
     if response and botname_sequence in response:
