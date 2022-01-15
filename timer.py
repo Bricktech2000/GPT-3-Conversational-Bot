@@ -1,3 +1,6 @@
+
+# deprcated, added to conversation.py
+
 import time
 
 class Timer:
@@ -10,7 +13,6 @@ class Timer:
     def Current_Length(self):
         """Returns float of time since last restart"""
         return time.time() - self.storedTime
-
 # maxTime = Timer()
 
 # maxTime.Restart()

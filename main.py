@@ -4,8 +4,7 @@ import json
 import time
 import sys
 import asyncio
-from timer import Timer
-
+from conversation import Conversation
 
 if len(sys.argv) != 2:
     print("Usage: python main.py <training data file path>")
@@ -18,11 +17,9 @@ client = discord.Client()                                                    # l
 openai.api_key = config['openai_api_key']
 conversations = {}
 
-timer = Timer()
-
 NUM_CHATS = 8 # the number of chats to append to the training data
 TEMPERATURE = 0.8 # the "originality" of GPT-3's answers
-MAX_TOKENS = 50 # the naximal length of GPt-3's answers
+MAX_TOKENS = 50 # the maximal length of GPt-3's answers
 CONVERSATION_TIMEOUT = 60 # seconds. the time to wait before a conversation is considered dead
 TIME_DELAY = 3 # seconds. The time to wait between sending new messages to API
 
@@ -53,18 +50,20 @@ async def on_message(message):
 
     conversation_id = f'{message.channel.id}%{message.guild.id}'
     current_time = time.time() # seconds
-
+    no_convo = Conversation(0) # This is so the if statemnt below still works
+    
     # if CONVERSATION_TIMEOUT seconds have passed since the last message, reset the conversation
-    if conversations.get(conversation_id + '%timestamp', 0) + CONVERSATION_TIMEOUT < current_time:
-        conversations[conversation_id] = []
-    conversations[conversation_id + '%timestamp'] = current_time
-
+    # if no coversation exsists, make one
+    if conversations.get(conversation_id, no_convo).timeAlive + CONVERSATION_TIMEOUT < current_time:
+        conversations[conversation_id] = Conversation()
+    current_convo = conversations[conversation_id]
 
     username = message.author.display_name
     username_sequence = f'{username}:'
     # https://stackoverflow.com/questions/54304428/get-bots-status-discord-py
     botname = message.guild.get_member(client.user.id).display_name
     botname_sequence = f'{botname}:'
+    response = False
 
     # Adds the message to the conversation and generates the "Should respond?" message
     conversations[conversation_id].append(f'\n{username_sequence} {message.content}')
@@ -74,6 +73,7 @@ async def on_message(message):
 
 
     # if GPT-3 believes it should type next response, send that response
+    print(response, botname_sequence)
     if response and botname_sequence in response:
         response = GPT_3(f"{training_data}{''.join(conversations[conversation_id][-NUM_CHATS:])}")
         response = response.replace(f'{botname_sequence} ', '')
