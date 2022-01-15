@@ -67,7 +67,6 @@ async def on_message(message):
     botname_sequence = f'{botname}:'
 
     # Adds the message to the conversation and generates the "Should respond?" message
-    responce = ""
     conversations[conversation_id].append(f'\n{username_sequence} {message.content}')
     if timer.Current_Length() >= TIME_DELAY:
         response = GPT_3(f"{responding_training_data}{''.join(conversations[conversation_id][-NUM_CHATS:])}")
@@ -76,7 +75,7 @@ async def on_message(message):
 
     # if GPT-3 believes it should type next response, send that response
     if response and botname_sequence in response:
-        responce = GPT_3(f"{training_data}{''.join(conversations[conversation_id][-NUM_CHATS:])}")
+        response = GPT_3(f"{training_data}{''.join(conversations[conversation_id][-NUM_CHATS:])}")
         response = response.replace(f'{botname_sequence} ', '')
         async with message.channel.typing():
             typing_delay = len(response) / 15 # 15 characters per second
