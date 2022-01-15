@@ -34,4 +34,4 @@ python main.py training_data/Grace_optimized.txt
 - [x] Make the responses sound like Grace
 - [ ] Work with temperature to make it lively
 - [ ] Menu in discord to manage options?
-- [ ] Support for separate simultaneous conversations
+- [x] Support for separate simultaneous conversations
