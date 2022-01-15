@@ -36,4 +36,4 @@ python main.py training_data/Grace_decision_2.txt training_data/Grace_response.t
 - [ ] Menu in discord to manage options?
 - [x] Support for separate simultaneous conversations
 - [x] Different systems for _whether_ it should answer and _what_ it actually answers
-- [ ] Shorten the length of the usernames in the training data (sha1 hashes ?)
+- [x] Shorten the length of the usernames in the training data (sha1 hashes ?)

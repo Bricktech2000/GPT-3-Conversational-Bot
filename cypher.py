@@ -1,23 +1,24 @@
-import base64
 import hashlib
 
-def genHashUsername(name):
-    """retrun 2 char long hash for the given username"""
+def gen_username_hash(name):
+    """return 2-char hash for the given username"""
     return hashlib.sha1(name.encode("ascii")).hexdigest()[:2]
 
 def change_usernames(convo):
     lines = convo.split('\n')
-    names = set()
-    for i in range(len(lines)):
-        name = lines[i].split(":")
-        print(name)
-        newName = genHashUsername(name[0])
-        lines[i] = newName + ":"
-        lines[i] += ":".join(name[1:len(name)]) if len(name) > 2 else name[1]
-    
+
+    for i, line in enumerate(lines):
+        name_message = line.split(": ", 1) # split at the first ":"
+
+        if len(name_message) == 2: # line not empty
+            name, message = name_message
+            new_name = gen_username_hash(name)
+            lines[i] = f'{new_name}: {message}'
+
     return "\n".join(lines)
-        
-    #print(names)
+
+
+# base-64 is a good idea actually
 
 # def encode_to_b64(username):
 #     user_bytes = username.encode("ascii")
