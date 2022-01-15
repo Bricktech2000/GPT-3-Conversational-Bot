@@ -5,6 +5,7 @@ import time
 import sys
 import asyncio
 from conversation import Conversation
+from cypher import Change_Usernames, genHashUsername
 
 if len(sys.argv) != 2:
     print("Usage: python main.py <training data file path>")
@@ -24,6 +25,7 @@ CONVERSATION_TIMEOUT = 60 # seconds. the time to wait before a conversation is c
 TIME_DELAY = 3 # seconds. The time to wait between sending new messages to API
 
 def GPT_3(chat_log):
+    chat_log = Change_Usernames(chat_log)
     response_object = openai.Completion.create(
         engine="curie",
         prompt=chat_log + '\n',
@@ -62,6 +64,7 @@ async def on_message(message):
     username_sequence = f'{username}:'
     # https://stackoverflow.com/questions/54304428/get-bots-status-discord-py
     botname = message.guild.get_member(client.user.id).display_name
+    botname = genHashUsername(botname)
     botname_sequence = f'{botname}:'
     response = False
 
