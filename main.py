@@ -25,11 +25,15 @@ CONVERSATION_TIMEOUT = 60 # seconds. the time to wait before a conversation is c
 TIME_DELAY = 2 # seconds. The time to wait between sending new messages to API
 
 def GPT_3(engine, chat_log, max_tokens=MAX_TOKENS):
-    print(change_usernames(chat_log))
+    # print(change_usernames(chat_log))
+    print('\n\n\n')
+    print(chat_log)
+    print('\n\n\n')
 
     response_object = openai.Completion.create(
         engine=engine,
-        prompt=change_usernames(chat_log),
+        prompt=chat_log,
+        # prompt=change_usernames(chat_log),
         temperature=TEMPERATURE,
         max_tokens=max_tokens,
         top_p=1,
@@ -57,14 +61,14 @@ async def on_message(message):
 
     username = message.author.display_name
     botname = message.guild.get_member(client.user.id).display_name
-    botname = gen_username_hash(botname)
+    # botname = gen_username_hash(botname)
     response = None
 
     print(f'received message: {message.content}')
 
     # add the message to the conversation and generate the "Should respond?" message
     current_convo.add_chat(username, message.content)
-    if current_convo.last_fetch_timestamp + TIME_DELAY < time.time():
+    if current_convo.last_fetch_timestamp + TIME_DELAY < time.time() or message.author.bot:
         current_convo.last_fetch_timestamp = time.time()
         response = GPT_3('curie', decision_training_data + current_convo.get_chat_log(NUM_CHATS) + '\n', 10) # 10 tokens for the username
         print(f'decision prediction: {response}')
@@ -73,7 +77,7 @@ async def on_message(message):
 
     # if GPT-3 believes it should type next response, send that response
     if response and f'{botname}: ' in response:
-        response = GPT_3('curie', response_training_data + current_convo.get_chat_log(NUM_CHATS) + f'\n{botname}: ')
+        response = GPT_3('davinci', response_training_data + current_convo.get_chat_log(NUM_CHATS) + f'\n{botname}: ')
         print(f'response prediction: {response}')
 
         async with message.channel.typing():
