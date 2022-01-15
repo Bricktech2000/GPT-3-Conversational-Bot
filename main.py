@@ -32,8 +32,8 @@ def GPT_3(engine, chat_log, max_tokens=MAX_TOKENS):
 
     response_object = openai.Completion.create(
         engine=engine,
-        prompt=chat_log,
         # prompt=change_usernames(chat_log),
+        prompt=chat_log,
         temperature=TEMPERATURE,
         max_tokens=max_tokens,
         top_p=1,
@@ -68,17 +68,18 @@ async def on_message(message):
 
     # add the message to the conversation and generate the "Should respond?" message
     current_convo.add_chat(username, message.content)
-    if current_convo.last_fetch_timestamp + TIME_DELAY < time.time() or message.author.bot:
-        current_convo.last_fetch_timestamp = time.time()
-        response = GPT_3('curie', decision_training_data + current_convo.get_chat_log(NUM_CHATS) + '\n', 10) # 10 tokens for the username
-        print(f'decision prediction: {response}')
+    if current_convo.last_fetch_timestamp + TIME_DELAY < time.time() or message.author.id == client.user.id:
+        # current_convo.last_fetch_timestamp = time.time()
+        # response = GPT_3('curie', decision_training_data + current_convo.get_chat_log(NUM_CHATS) + '\n', 10) # 10 tokens for the username
+        # print(f'decision prediction: {response}')
+        response = GPT_3('curie', response_training_data + current_convo.get_chat_log(NUM_CHATS) + '\n')
+        print(f'response prediction: {response}')
     else:
         print('ignoring message to avoid too frequent API calls')
 
     # if GPT-3 believes it should type next response, send that response
     if response and f'{botname}: ' in response:
-        response = GPT_3('davinci', response_training_data + current_convo.get_chat_log(NUM_CHATS) + f'\n{botname}: ')
-        print(f'response prediction: {response}')
+        response = response.replace(f'{botname}: ', '')
 
         async with message.channel.typing():
             typing_delay = len(response) / 15 # 15 characters per second
