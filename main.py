@@ -66,11 +66,10 @@ async def on_message(message):
     response = False
 
     # Adds the message to the conversation and generates the "Should respond?" message
-    conversations[conversation_id].append(f'\n{username_sequence} {message.content}')
-    if timer.Current_Length() >= TIME_DELAY:
-        response = GPT_3(f"{responding_training_data}{''.join(conversations[conversation_id][-NUM_CHATS:])}")
-        timer.Restart()
-
+    current_convo.Add_Chat(username_sequence, message.content)
+    if current_convo.Current_Length() >= TIME_DELAY:
+        response = GPT_3(f"{responding_training_data}{''.join(current_convo.chats[-NUM_CHATS:-1])}")
+        current_convo.Restart_Timer()
 
     # if GPT-3 believes it should type next response, send that response
     print(response, botname_sequence)
