@@ -1,10 +1,20 @@
 import discord
 import openai
 import json
-import time
 import sys
 import asyncio
+import time
+from timer import Timer
 
+# import time
+# from conversation import Conversation
+
+# conversations = []
+
+current_chats = []
+builtUpChats = ""
+
+timer = Timer()
 
 if len(sys.argv) != 2:
     print("Usage: python main.py <training data file path>")
@@ -14,12 +24,10 @@ config = json.load(open("config.json"))
 training_data = open(sys.argv[1], "r").read()
 client = discord.Client()
 openai.api_key = config['openai_api_key']
-conversations = {}
 
-NUM_CHATS = 8 # the number of chats to append to the training data
-TEMPERATURE = 0.8 # the "originality" of GPT-3's answers
+NUM_CHATS = 10 # the number of chats to append to the training data
+TEMPERATURE = 1 # the "originality" of GPT-3's answers
 MAX_TOKENS = 50 # the naximal length of GPt-3's answers
-CONVERSATION_TIMEOUT = 60 # seconds. the time to wait before a conversation is considered dead
 
 def GPT_3(chat_log):
     response_object = openai.Completion.create(
@@ -44,16 +52,19 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    global conversations
+    global current_chats
 
-    conversation_id = f'{message.channel.id}%{message.guild.id}'
-    current_time = time.time() # seconds
+    # convo = None
 
-    # if CONVERSATION_TIMEOUT seconds have passed since the last message, reset the conversation
-    if conversations.get(conversation_id + '%timestamp', 0) + CONVERSATION_TIMEOUT < current_time:
-        conversations[conversation_id] = []
-    conversations[conversation_id + '%timestamp'] = current_time
-
+    # for i in conversations:
+    #     if time.time() - i.timeAlive > 5000:
+    #         conversations.pop(i)
+    #         continue
+    #     if message.channel == i.channel:
+    #         convo = i
+    
+    # if convo == None:
+    #     convo = Conversation(message.author, message.channel, None)
 
     username = message.author.display_name
     username_sequence = f'{username}:'
@@ -61,8 +72,10 @@ async def on_message(message):
     botname = message.guild.get_member(client.user.id).display_name
     botname_sequence = f'{botname}:'
 
-    conversations[conversation_id].append(f'\n{username_sequence} {message.content}')
-    response = GPT_3(f"{training_data}{''.join(conversations[conversation_id][-NUM_CHATS:-1])}\n{username_sequence} {message.content}")
+    current_chats.append(f'\n{username_sequence} {message.content}')
+    if timer.Current_Length() >= 3:
+        response = GPT_3(f"{training_data}{''.join(current_chats[-NUM_CHATS:-1])}\n{username_sequence} {message.content}")
+        timer.Restart()
 
 
     # if GPT-3 believes it should type next response, send that response
@@ -72,7 +85,6 @@ async def on_message(message):
             typing_delay = len(response) / 15 # 15 characters per second
             print(f"Typing delay: {typing_delay}s")
             await asyncio.sleep(typing_delay)
-        # await message.channel.send(f'CONVERSAITION ID: {conversation_id}\n{response}')
         await message.channel.send(response)
 
 client.run(config["token"])
