@@ -66,7 +66,7 @@ async def on_message(message):
 
     conversations[conversation_id].append(f'\n{username_sequence} {message.content}')
     if timer.Current_Length() >= 3:
-        response = GPT_3(f"{training_data}{''.join(conversations[conversation_id][-NUM_CHATS:-1])}\n{username_sequence} {message.content}")
+        response = GPT_3(f"{training_data}{''.join(conversations[conversation_id][-NUM_CHATS:])}")
         timer.Restart()
 
 
