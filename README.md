@@ -20,12 +20,12 @@ The bots token and prefix are stored in a file called `config.json` located in m
 }
 ```
 
-And then fill in the values for your bot's prefix and the [bots token](https://discord.com/developers/applications)
+And then fill in the values for your bot's prefix, the [bot's token](https://discord.com/developers/applications) and an [OpenAI API key](https://openai.com/api).
 
 Run the bot with this command (in the bots directiory):
 
 ```bash
-python main.py training_data/Grace.txt
+python main.py training_data/Grace_optimized.txt
 ```
 
 ## TODO
