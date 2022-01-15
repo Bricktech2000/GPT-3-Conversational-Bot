@@ -35,3 +35,5 @@ python main.py training_data/Grace_optimized.txt
 - [ ] Work with temperature to make it lively
 - [ ] Menu in discord to manage options?
 - [x] Support for separate simultaneous conversations
+- [ ] Different systems for _whether_ it should answer and _what_ it actually answers
+- [ ] Shorten the length of the usernames in the training data (sha1 hashes ?)
