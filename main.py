@@ -4,6 +4,7 @@ import json
 import time
 import sys
 import asyncio
+from timer import Timer
 
 
 if len(sys.argv) != 2:
@@ -15,6 +16,8 @@ training_data = open(sys.argv[1], "r").read()
 client = discord.Client()
 openai.api_key = config['openai_api_key']
 conversations = {}
+
+timer = Timer()
 
 NUM_CHATS = 8 # the number of chats to append to the training data
 TEMPERATURE = 0.8 # the "originality" of GPT-3's answers
@@ -62,7 +65,9 @@ async def on_message(message):
     botname_sequence = f'{botname}:'
 
     conversations[conversation_id].append(f'\n{username_sequence} {message.content}')
-    response = GPT_3(f"{training_data}{''.join(conversations[conversation_id][-NUM_CHATS:-1])}\n{username_sequence} {message.content}")
+    if timer.Current_Length() >= 3:
+        response = GPT_3(f"{training_data}{''.join(conversations[conversation_id][-NUM_CHATS:-1])}\n{username_sequence} {message.content}")
+        timer.Restart()
 
 
     # if GPT-3 believes it should type next response, send that response
