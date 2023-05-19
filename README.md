@@ -1,6 +1,6 @@
 # GPT-3 Conversational Bot
 
-A general-purpose annoying Discord bot based on GPT-3.
+_A general-purpose annoying Discord bot based on GPT-3_
 
 ## Getting started
 
